@@ -2,16 +2,12 @@ use std::env;
 use std::io::{self, Read};
 use std::net::{TcpListener, TcpStream};
 
-fn handler(stream: &mut TcpStream) {
-    let mut buf = vec![];
-    match stream.read_to_end(&mut buf) {
-        Ok(_) => {
-            let words = std::str::from_utf8(&buf).unwrap();
-            println!("{}", words)
-            },
-        Err(ref e) => panic!("IO failed: {}", e),
-    }
+fn handler(mut stream: TcpStream) {
+    let mut buf = vec![0; 512];
 
+    stream.read(&mut buf).unwrap();
+
+    println!("Request: {}", String::from_utf8_lossy(&buf[..]));
 }
 
 fn main() -> io::Result<()> {
@@ -25,7 +21,8 @@ fn main() -> io::Result<()> {
     let listener = TcpListener::bind(addr).unwrap();
 
     for stream in listener.incoming() {
-        handler(&mut stream?);
+        let stream = stream.unwrap();
+        handler(stream);
     }
     Ok(())
 }
