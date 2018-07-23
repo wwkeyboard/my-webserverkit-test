@@ -1,5 +1,6 @@
 use std::env;
 use std::io::{self, Read};
+use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 
 fn handler(mut stream: TcpStream) {
@@ -7,7 +8,13 @@ fn handler(mut stream: TcpStream) {
 
     stream.read(&mut buf).unwrap();
 
-    println!("Request: {}", String::from_utf8_lossy(&buf[..]));
+    let ls = String::from_utf8_lossy(&buf[..]);
+
+    if ls.starts_with("GET") {
+        let response = format!("HTTP/1.1 200 OK\r\n\r\n<html><body>hello</body></html>");
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    }
 }
 
 fn main() -> io::Result<()> {
